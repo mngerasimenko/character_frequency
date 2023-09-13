@@ -1,2 +1,7 @@
-package ru.mngerasimenko.character_frequency.service;public interface CharacterService {
+package ru.mngerasimenko.character_frequency.service;
+
+import java.util.Map;
+
+public interface CharacterService {
+	Map<Character, Integer> calculateCharacterFrequency(String sourceString);
 }

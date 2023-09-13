@@ -1,23 +1,46 @@
-package ru.mngerasimenko.character_frequency.controllers;
+package ru.mngerasimenko.character_frequency.controller;
 
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import ru.mngerasimenko.character_frequency.exception_handling.IncorrectData;
+import ru.mngerasimenko.character_frequency.exception_handling.IncorrectSourceStringException;
+import ru.mngerasimenko.character_frequency.service.CharacterService;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
+@RequestMapping("/api/frequency-character")
 public class Controller {
 
+	private final CharacterService service;
 
-	@PostMapping("/{sourceString}")
+	@Autowired
+	public Controller(CharacterService service) {
+		this.service = service;
+	}
+
+	@GetMapping("/{sourceString}")
 	public Map<Character, Integer> calculateCharacterFrequency(@PathVariable String sourceString) {
+		sourceString = sourceString.trim();
+		if (sourceString.contains(" ")) {
+			throw new IncorrectSourceStringException("The string cannot contain space characters");
+		}
 
-		Map<Character, Integer> map = new HashMap<>();
-		map.put('a', 2);
-		map.put('c', 4);
+		return service.calculateCharacterFrequency(sourceString);
+	}
 
-		return map;
+	@GetMapping("/")
+	public void emptySourceString() {
+		throw new IncorrectSourceStringException("The request cannot be empty");
+	}
+
+	@ExceptionHandler
+	public ResponseEntity<IncorrectData> handleException(IncorrectSourceStringException exception) {
+		IncorrectData incorrectData = new IncorrectData();
+		incorrectData.setInfo(exception.getMessage());
+
+		return new ResponseEntity<>(incorrectData, HttpStatus.BAD_REQUEST);
 	}
 }
